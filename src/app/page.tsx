@@ -1,3 +1,5 @@
+export const fetchCache = "force-no-store";
+
 import KeyCard from "@/components/key-card";
 import PageWrapper from "@/components/page-wrapper";
 import { Button } from "@/components/ui/button";
