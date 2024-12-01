@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Owner {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  keys Key[] @relation("KeyOwner")
+}
+
+model Holder {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  keys Key[] @relation("KeyHolder")
+}
+
+model Key {
+  id           String @id @default(uuid())
+  name         String
+  keyNumber    Int
+  numberOfKeys Int
+
+  // The Owner of the Key
+  ownerId Int
+  owner   Owner @relation("KeyOwner", fields: [ownerId], references: [id])
+
+  // Temporary possessor of the Key (either an Owner or a Holder)
+  holderType  String // "OWNER" or "HOLDER"
+  holderId    Int?
+  holder      Holder?       @relation("KeyHolder", fields: [holderId], references: [id])
+  Transaction Transaction[]
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now()) // When the transaction occurred
+
+  // The person/entity passing the key (passer)
+  passerType String // "OWNER" or "HOLDER"
+  passerId   Int
+
+  // The person/entity receiving the key (receiver)
+  receiverType String // "OWNER" or "HOLDER"
+  receiverId   Int
+
+  // The key involved in the transaction
+  keyId String
+  key   Key    @relation(fields: [keyId], references: [id])
+}
